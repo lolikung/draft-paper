@@ -9,35 +9,38 @@
       ul
         li
           | 紙張大小
-          input(v-model.number="paper.width" type="number" min="1" max="999" step="1" value="210" @change="drawDraft")
+          input(v-model.number="paper.width" type="number" min="1" max="999" step="1" value="210" @change="changeConfig")
           | x
-          input(v-model.number="paper.height" type="number" min="1" max="999" step="1" value="297" @change="drawDraft")
+          input(v-model.number="paper.height" type="number" min="1" max="999" step="1" value="297" @change="changeConfig")
         li
           | 邊距
           | 上
-          input(v-model.number="paper.marginTop" type="number" min="0" max="999" step="1" value="10" @change="drawDraft")
+          input(v-model.number="paper.marginTop" type="number" min="0" max="999" step="1" value="10" @change="changeConfig")
           br
           | 左
-          input(v-model.number="paper.marginLeft" type="number" min="0" max="999" step="1" value="10" @change="drawDraft")
+          input(v-model.number="paper.marginLeft" type="number" min="0" max="999" step="1" value="10" @change="changeConfig")
           | 右
-          input(v-model.number="paper.marginRight" type="number" min="0" max="999" step="1" value="10" @change="drawDraft")
+          input(v-model.number="paper.marginRight" type="number" min="0" max="999" step="1" value="10" @change="changeConfig")
           br
           | 下
-          input(v-model.number="paper.marginBottom" type="number" min="0" max="999" step="1" value="10" @change="drawDraft")
+          input(v-model.number="paper.marginBottom" type="number" min="0" max="999" step="1" value="10" @change="changeConfig")
         li
           | 列印解析度
-          input(v-model.number="paper.resoltion" type="number" min="72" max="9999" step="1" value="300" @change="drawDraft")
+          input(v-model.number="paper.resoltion" type="number" min="72" max="9999" step="1" value="300" @change="changeConfig")
       hr
+      | 網格類型
+      select
+        option(v-for="item in gridLayoutItems" value="item") {{item}}
       ul
         li
           | 邊框粗細
-          input(v-model.number="grid.border" type="number" min="0" max="100" step="0.1" value="0.8" @change="drawDraft")
+          input(v-model.number="grid.border" type="number" min="0" max="100" step="0.1" value="0.8" @change="changeConfig")
+        li
+          | 邊框色彩
+          input(v-model="grid.borderColor" type="color" @change="changeConfig")
         li
           | 格子大小
-          input(v-model.number="grid.contentSize" type="number" min="0" max="999" step="0.1" value="15" @change="drawDraft")
-        li
-          | 格子顏色
-          input(v-model="grid.borderColor" type="color" @change="drawDraft")
+          input(v-model.number="grid.contentSize" type="number" min="0" max="999" step="0.1" value="15" @change="changeConfig")
       br
       | 編輯完後請按下「產生圖片」，並在產生的圖片上按右鍵 -> 另存新檔
       br
@@ -46,6 +49,11 @@
 </template>
 
 <script>
+let gridLayout = [
+  require('./grid/GenericSquare')
+];
+let GenericSquare = gridLayout[0];
+
 module.exports = {
   data() {
     return {
@@ -66,36 +74,31 @@ module.exports = {
     };
   },
   methods: {
-    drawDraft() {
+    changeConfig() {
+      this.drawDraft();
+    },
+    drawDraft( dpi = 72 ) {
       let MM_PER_INCH = 25.4;
-      let DPI = this.paper.resoltion;
-      let SCALE = DPI/MM_PER_INCH;
-      SCALE = 2;
+      let scale = dpi/MM_PER_INCH;
 
       /**
        * 畫單一格子
        */
-      let gridCanvas = document.createElement('canvas');
-      let borderSize = Math.round(this.grid.border * SCALE);
-      gridCanvas.width = Math.round(this.grid.contentSize*SCALE) + borderSize*2;
-      gridCanvas.height = gridCanvas.width;
-      let gridCtx = gridCanvas.getContext('2d');
+      let gridDraw = GenericSquare.render(scale, {
+        borderColor: this.grid.borderColor,
+        borderSize: this.grid.border,
+        contentSize: this.grid.contentSize
+      });
 
-      // 畫邊框
-      if( borderSize > 0 ) {
-        gridCtx.beginPath();
-        gridCtx.lineWidth = borderSize;
-        gridCtx.strokeStyle = this.grid.borderColor;
-        gridCtx.rect(borderSize/2, borderSize/2, gridCanvas.width-borderSize, gridCanvas.height-borderSize);
-        gridCtx.stroke();
-      }
+      let borderSize = gridDraw.layout.borderTop;
+      let gridCanvas = gridDraw.canvas;
 
       /**
        * 繪製稿紙
        */
       // 計算可用內容寬高
-      let contentWidth = Math.floor((this.paper.width - this.paper.marginLeft - this.paper.marginRight)*SCALE);
-      let contentHeight = Math.floor((this.paper.height - this.paper.marginTop - this.paper.marginBottom)*SCALE);
+      let contentWidth = Math.floor((this.paper.width - this.paper.marginLeft - this.paper.marginRight)*scale);
+      let contentHeight = Math.floor((this.paper.height - this.paper.marginTop - this.paper.marginBottom)*scale);
 
       // 計算可以畫幾格
       let gridCol = Math.floor(contentWidth/(gridCanvas.width-borderSize));
@@ -103,8 +106,8 @@ module.exports = {
 
       // 建立紙張
       let draftCanvas = document.createElement('canvas');
-      draftCanvas.width = Math.round(this.paper.width * SCALE);
-      draftCanvas.height = Math.round(this.paper.height * SCALE);
+      draftCanvas.width = Math.round(this.paper.width * scale);
+      draftCanvas.height = Math.round(this.paper.height * scale);
       let draftCtx = draftCanvas.getContext('2d');
 
       // 開始畫表格
@@ -138,12 +141,21 @@ module.exports = {
 
     // 產生圖片
     generateImage() {
+      this.drawDraft(this.paper.resoltion);
       let base64 = this.$refs.draftPaper.toDataURL();
       this.$refs.genertateImage.setAttribute('src', base64);
     }
   },
   mounted() {
     this.drawDraft();
+  },
+  computed: {
+    // 可用的網格名稱
+    gridLayoutItems() {
+      return gridLayout.map( grid => {
+        return grid.alias;
+      });
+    }
   }
 };
 </script>
