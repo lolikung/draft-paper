@@ -35,6 +35,9 @@
         li
           | 格子大小
           input(v-model.number="grid.contentSize" type="number" min="0" max="100" step="0.1" value="15" @change="drawDraft")
+        li
+          | 格子顏色
+          input(v-model="grid.borderColor" type="color" @change="drawDraft")
       br
       | 編輯完後請按下「產生圖片」，並在產生的圖片上按右鍵 -> 另存新檔
       br
@@ -57,7 +60,8 @@ module.exports = {
       },
       grid: {
         border: 0.8,
-        contentSize: 15
+        contentSize: 15,
+        borderColor: '#333'
       }
     };
   },
@@ -66,7 +70,7 @@ module.exports = {
       let MM_PER_INCH = 25.4;
       let DPI = this.paper.resoltion;
       let SCALE = DPI/MM_PER_INCH;
-      // SCALE = 3;
+      SCALE = 2;
 
       /**
        * 畫單一格子
@@ -81,7 +85,7 @@ module.exports = {
       if( borderSize > 0 ) {
         gridCtx.beginPath();
         gridCtx.lineWidth = borderSize;
-        gridCtx.strokeStyle = "black";
+        gridCtx.strokeStyle = this.grid.borderColor;
         gridCtx.rect(borderSize/2, borderSize/2, gridCanvas.width-borderSize, gridCanvas.height-borderSize);
         gridCtx.stroke();
       }
