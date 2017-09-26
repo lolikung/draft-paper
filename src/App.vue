@@ -34,7 +34,7 @@
           input(v-model.number="grid.border" type="number" min="0" max="100" step="0.1" value="0.8" @change="drawDraft")
         li
           | 格子大小
-          input(v-model.number="grid.contentSize" type="number" min="0" max="100" step="0.1" value="15" @change="drawDraft")
+          input(v-model.number="grid.contentSize" type="number" min="0" max="999" step="0.1" value="15" @change="drawDraft")
         li
           | 格子顏色
           input(v-model="grid.borderColor" type="color" @change="drawDraft")
@@ -98,8 +98,8 @@ module.exports = {
       let contentHeight = Math.floor((this.paper.height - this.paper.marginTop - this.paper.marginBottom)*SCALE);
 
       // 計算可以畫幾格
-      let gridRow = Math.floor(contentHeight/gridCanvas.height);
-      let gridCol = Math.floor(contentWidth/gridCanvas.width);
+      let gridCol = Math.floor(contentWidth/(gridCanvas.width-borderSize));
+      let gridRow = Math.floor(contentHeight/(gridCanvas.height-borderSize));
 
       // 建立紙張
       let draftCanvas = document.createElement('canvas');
