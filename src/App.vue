@@ -63,37 +63,35 @@ module.exports = {
   },
   methods: {
     drawDraft() {
-      let MM_PER_INCH  = 25.4;
+      let MM_PER_INCH = 25.4;
       let DPI = this.paper.resoltion;
       let SCALE = DPI/MM_PER_INCH;
-      // SCALE = 6;
+      // SCALE = 3;
 
-      // 計算每個格子的寬高
-      let width = (this.grid.contentSize + this.grid.border) * SCALE;
-      let height = width;
-
-      // 畫單一格子
+      /**
+       * 畫單一格子
+       */
       let gridCanvas = document.createElement('canvas');
-      gridCanvas.width = width;
-      gridCanvas.height = height;
+      let borderSize = Math.round(this.grid.border * SCALE);
+      gridCanvas.width = Math.round(this.grid.contentSize*SCALE) + borderSize*2;
+      gridCanvas.height = gridCanvas.width;
       let gridCtx = gridCanvas.getContext('2d');
 
       // 畫邊框
-      let borderSize = Math.round(this.grid.border * SCALE);
       if( borderSize > 0 ) {
         gridCtx.beginPath();
         gridCtx.lineWidth = borderSize;
         gridCtx.strokeStyle = "black";
-        gridCtx.rect(0, 0, width, height);
+        gridCtx.rect(borderSize/2, borderSize/2, gridCanvas.width-borderSize, gridCanvas.height-borderSize);
         gridCtx.stroke();
       }
 
       /**
        * 繪製稿紙
        */
-      // 計算可用內容寬度
-      let contentWidth = (this.paper.width - this.paper.marginLeft - this.paper.marginRight)*SCALE;
-      let contentHeight = (this.paper.height - this.paper.marginTop - this.paper.marginBottom)*SCALE;
+      // 計算可用內容寬高
+      let contentWidth = Math.floor((this.paper.width - this.paper.marginLeft - this.paper.marginRight)*SCALE);
+      let contentHeight = Math.floor((this.paper.height - this.paper.marginTop - this.paper.marginBottom)*SCALE);
 
       // 計算可以畫幾格
       let gridRow = Math.floor(contentHeight/gridCanvas.height);
@@ -101,22 +99,23 @@ module.exports = {
 
       // 建立紙張
       let draftCanvas = document.createElement('canvas');
-      draftCanvas.width = this.paper.width * SCALE;
-      draftCanvas.height = this.paper.height * SCALE;
+      draftCanvas.width = Math.round(this.paper.width * SCALE);
+      draftCanvas.height = Math.round(this.paper.height * SCALE);
       let draftCtx = draftCanvas.getContext('2d');
 
       // 開始畫表格
-      let lastPointX;
-      let lastPointY;
+      let lastPointX, lastPointY;
       for(let drawRow = 0; drawRow < gridRow; drawRow++) {
         for(let drawCol = 0; drawCol < gridCol; drawCol++) {
-          let offsetX = drawCol*(gridCanvas.width-borderSize/2);
-          let offsetY = drawRow*(gridCanvas.height-borderSize/2);
+          let offsetX = drawCol*(gridCanvas.width-borderSize);
+          let offsetY = drawRow*(gridCanvas.height-borderSize);
           lastPointX = offsetX + gridCanvas.width;
           lastPointY = offsetY + gridCanvas.height;
           draftCtx.drawImage(gridCanvas, offsetX, offsetY);
         }
       }
+
+      // 把表格置中
       let gridDraft = draftCtx.getImageData(0, 0, lastPointX, lastPointY);
       draftCtx.clearRect(0, 0, draftCanvas.width, draftCanvas.height);
       draftCtx.putImageData(

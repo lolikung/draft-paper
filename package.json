@@ -5,7 +5,8 @@
     "main": "index.js",
     "scripts": {
         "dev": "cross-env NODE_ENV=development ENTRY_POINT=main.js webpack-dev-server --config webpack.dev.js --progress --hot --inline --host 0.0.0.0",
-        "build": "cross-env NODE_ENV=development ENTRY_POINT=main.js webpack --config webpack.dev.js --progress --profile"
+        "build": "cross-env NODE_ENV=development ENTRY_POINT=main.js webpack --config webpack.dev.js --progress --profile",
+        "build:production": "cross-env NODE_ENV=production ENTRY_POINT=main.js webpack --config webpack.prod.js --progress --hide-modules"
     },
     "keywords": [],
     "author": "d831u3@gmail.com",
