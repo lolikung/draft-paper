@@ -15,7 +15,7 @@ class GenericSquare
     return [
       {
         alias: '邊框粗細(mm)',
-        id: 'borderWidth',
+        id: 'borderSize',
         type: 'number',
         attr: {
           min: 0,
@@ -25,8 +25,14 @@ class GenericSquare
         default: 0.8
       },
       {
+        alias: '邊框色彩',
+        id: 'borderColor',
+        type: 'color',
+        default: '#AAA'
+      },
+      {
         alias: '格子大小(mm)',
-        id: 'contentWidth',
+        id: 'contentSize',
         type: 'number',
         attr: {
           min: 0,
@@ -34,12 +40,6 @@ class GenericSquare
           step: 0.1,
         },
         default: 15
-      },
-      {
-        alias: '邊框色彩',
-        id: 'borderColor',
-        type: 'color',
-        default: '#AAA'
       }
     ];
   }

@@ -29,18 +29,15 @@
           input(v-model.number="paper.resoltion" type="number" min="72" max="9999" step="1" value="300" @change="changeConfig")
       hr
       | 網格類型
-      select
-        option(v-for="item in gridLayoutItems" value="item") {{item}}
+      select(v-model="gridTemplate")
+        option(v-for="tpl in gridTemplates" :value="tpl") {{tpl.alias}}
+      hr
+
       ul
-        li
-          | 邊框粗細
-          input(v-model.number="grid.border" type="number" min="0" max="100" step="0.1" value="0.8" @change="changeConfig")
-        li
-          | 邊框色彩
-          input(v-model="grid.borderColor" type="color" @change="changeConfig")
-        li
-          | 格子大小
-          input(v-model.number="grid.contentSize" type="number" min="0" max="999" step="0.1" value="15" @change="changeConfig")
+        template(v-for="gridCfg in gridTemplate.config")
+          li
+            | {{gridCfg.alias}}
+            extInput(v-model="gridConfig[gridCfg.id]" :cfg="gridCfg" @change="changeConfig")
       br
       | 編輯完後請按下「產生圖片」，並在產生的圖片上按右鍵 -> 另存新檔
       br
@@ -49,14 +46,18 @@
 </template>
 
 <script>
-let gridLayout = [
+let components = {
+  extInput: require('./extInput.vue')
+};
+let gridTemplates = [
   require('./grid/GenericSquare')
 ];
-let GenericSquare = gridLayout[0];
 
 module.exports = {
+  components,
   data() {
     return {
+      gridTemplate: gridTemplates[0],
       paper: {
         width: 210,
         height: 297,
@@ -66,8 +67,8 @@ module.exports = {
         marginRight: 10,
         marginBottom: 10
       },
-      grid: {
-        border: 0.8,
+      gridConfig: {
+        borderSize: 0.8,
         contentSize: 15,
         borderColor: '#333'
       }
@@ -80,15 +81,12 @@ module.exports = {
     drawDraft( dpi = 72 ) {
       let MM_PER_INCH = 25.4;
       let scale = dpi/MM_PER_INCH;
+      let gridTemplate = this.gridTemplate;
 
       /**
        * 畫單一格子
        */
-      let gridDraw = GenericSquare.render(scale, {
-        borderColor: this.grid.borderColor,
-        borderSize: this.grid.border,
-        contentSize: this.grid.contentSize
-      });
+      let gridDraw = gridTemplate.render(scale, this.gridConfig);
 
       let borderSize = gridDraw.layout.borderTop;
       let gridCanvas = gridDraw.canvas;
@@ -138,7 +136,6 @@ module.exports = {
       let destCtx = destCanvas.getContext('2d');
       destCtx.drawImage(draftCanvas, 0, 0);
     },
-
     // 產生圖片
     generateImage() {
       this.drawDraft(this.paper.resoltion);
@@ -151,10 +148,8 @@ module.exports = {
   },
   computed: {
     // 可用的網格名稱
-    gridLayoutItems() {
-      return gridLayout.map( grid => {
-        return grid.alias;
-      });
+    gridTemplates() {
+      return gridTemplates;
     }
   }
 };
