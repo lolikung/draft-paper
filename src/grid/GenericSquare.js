@@ -4,7 +4,7 @@
 class GenericSquare
 {
   static get alias() {
-    return '基本方框';
+    return '基本方格';
   }
 
   static get id() {
@@ -13,6 +13,17 @@ class GenericSquare
 
   static get config() {
     return [
+      {
+        alias: '格子大小(mm)',
+        id: 'contentSize',
+        type: 'number',
+        attr: {
+          min: 0,
+          max: 9990,
+          step: 0.1,
+        },
+        default: 15
+      },
       {
         alias: '邊框粗細(mm)',
         id: 'borderSize',
@@ -28,18 +39,7 @@ class GenericSquare
         alias: '邊框色彩',
         id: 'borderColor',
         type: 'color',
-        default: '#AAA'
-      },
-      {
-        alias: '格子大小(mm)',
-        id: 'contentSize',
-        type: 'number',
-        attr: {
-          min: 0,
-          max: 9990,
-          step: 0.1,
-        },
-        default: 15
+        default: '#AAAAAA'
       }
     ];
   }
