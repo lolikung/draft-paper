@@ -39,7 +39,7 @@ class PoundSquare
         alias: '邊框色彩',
         id: 'borderColor',
         type: 'color',
-        default: '#888888'
+        default: '#666666'
       },
       {
         alias: '邊框粗細(mm)',

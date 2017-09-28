@@ -39,7 +39,7 @@ class GenericSquare
         alias: '邊框色彩',
         id: 'borderColor',
         type: 'color',
-        default: '#AAAAAA'
+        default: '#666666'
       }
     ];
   }
@@ -56,19 +56,19 @@ class GenericSquare
   static render( scale, config ) {
     let {borderSize, borderColor, contentSize} = config;
 
-    let gridCanvas = document.createElement('canvas');
+    let canvas = document.createElement('canvas');
     borderSize = Math.round(borderSize*scale);
-    gridCanvas.width = Math.round(contentSize*scale) + borderSize*2;
-    gridCanvas.height = gridCanvas.width;
-    let gridCtx = gridCanvas.getContext('2d');
+    canvas.width = Math.round(contentSize*scale) + borderSize*2;
+    canvas.height = canvas.width;
+    let ctx = canvas.getContext('2d');
 
     // 畫邊框
     if( borderSize > 0 ) {
-      gridCtx.beginPath();
-      gridCtx.lineWidth = borderSize;
-      gridCtx.strokeStyle = borderColor;
-      gridCtx.rect(borderSize/2, borderSize/2, gridCanvas.width-borderSize, gridCanvas.height-borderSize);
-      gridCtx.stroke();
+      ctx.beginPath();
+      ctx.lineWidth = borderSize;
+      ctx.strokeStyle = borderColor;
+      ctx.rect(borderSize/2, borderSize/2, canvas.width-borderSize, canvas.height-borderSize);
+      ctx.stroke();
     }
 
     return {
@@ -78,7 +78,7 @@ class GenericSquare
         borderRight: borderSize,
         borderBottom: borderSize,
       },
-      canvas: gridCanvas
+      canvas: canvas
     };
   };
 }
