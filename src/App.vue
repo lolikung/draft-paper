@@ -34,8 +34,8 @@
       hr
 
       ul
-        template(v-for="gridCfg in gridTemplate.config")
-          li
+        template(v-if="gridTemplate")
+          li(v-for="gridCfg in gridTemplate.config")
             | {{gridCfg.alias}}
             extInput(v-model="gridConfig[gridCfg.id]" :cfg="gridCfg" @change="changeConfig")
       br
@@ -50,6 +50,7 @@ let components = {
   extInput: require('./extInput.vue')
 };
 let gridTemplates = [
+  require('./grid/PoundSquare'),
   require('./grid/GenericSquare')
 ];
 
@@ -57,7 +58,7 @@ module.exports = {
   components,
   data() {
     return {
-      gridTemplate: gridTemplates[0],
+      gridTemplate: null,
       paper: {
         width: 210,
         height: 297,
@@ -68,9 +69,6 @@ module.exports = {
         marginBottom: 10
       },
       gridConfig: {
-        borderSize: 0.8,
-        contentSize: 15,
-        borderColor: '#333'
       }
     };
   },
@@ -144,7 +142,24 @@ module.exports = {
     }
   },
   mounted() {
-    this.drawDraft();
+    // 設定預設網格
+    this.gridTemplate = gridTemplates[0];
+  },
+  watch: {
+    // 切換網格類型後要要更新設定的欄位
+    gridTemplate: function( newTpl, oldTpl ) {
+      // 移除舊有屬性
+      for(let key of Object.keys(this.gridConfig)) {
+        this.$delete(this.gridConfig, key);
+      }
+
+      // 加入新屬性
+      for(let item of newTpl.config) {
+        this.$set(this.gridConfig, item.id, item.default);
+      }
+
+      this.drawDraft();
+    }
   },
   computed: {
     // 可用的網格名稱
