@@ -13,17 +13,9 @@
         layoutSettings(ref="layoutSettings" @change="changeConfig")
         //- 輸出設定
         outputSettings(ref="outputSettings" @change="changeConfig")
-      hr
-      | 網格類型
-      select(v-model="gridTemplate")
-        option(v-for="tpl in gridTemplates" :value="tpl") {{tpl.alias}}
-      hr
+        //- 格子設定
+        gridSettings(ref="gridSettings" @change="changeConfig")
 
-      ul
-        template(v-if="gridTemplate")
-          li(v-for="gridCfg in gridTemplate.config")
-            | {{gridCfg.alias}}
-            extInput(v-model="gridConfig[gridCfg.id]" :cfg="gridCfg" @change="changeConfig")
       br
       | 編輯完後請按下「產生圖片」，並在產生的圖片上按右鍵 -> 另存新檔
       br
@@ -36,22 +28,11 @@ let components = {
   paperSettings: require('./settings/paper.vue'),
   layoutSettings: require('./settings/layout.vue'),
   outputSettings: require('./settings/output.vue'),
-  extInput: require('./extInput.vue')
+  gridSettings: require('./settings/grid/index.vue')
 };
-let gridTemplates = [
-  require('./grid/PoundSquare'),
-  require('./grid/GenericSquare')
-];
 
 module.exports = {
   components,
-  data() {
-    return {
-      gridTemplate: null,
-      gridConfig: {
-      }
-    };
-  },
   methods: {
     changeConfig() {
       this.drawDraft();
@@ -60,12 +41,12 @@ module.exports = {
       console.log('draw');
       let MM_PER_INCH = 25.4;
       let scale = dpi/MM_PER_INCH;
-      let gridTemplate = this.gridTemplate;
+      let gridTemplate = this.gridSettings.template;
 
       /**
        * 畫單一格子
        */
-      let gridDraw = gridTemplate.render(scale, this.gridConfig);
+      let gridDraw = gridTemplate.render(scale, this.gridSettings.config);
 
       let borderSize = gridDraw.layout.borderTop;
       let gridCanvas = gridDraw.canvas;
@@ -122,26 +103,6 @@ module.exports = {
       this.$refs.genertateImage.setAttribute('src', base64);
     }
   },
-  mounted() {
-    // 設定預設網格
-    this.gridTemplate = gridTemplates[0];
-  },
-  watch: {
-    // 切換網格類型後要要更新設定的欄位
-    gridTemplate: function( newTpl, oldTpl ) {
-      // 移除舊有屬性
-      for(let key of Object.keys(this.gridConfig)) {
-        this.$delete(this.gridConfig, key);
-      }
-
-      // 加入新屬性
-      for(let item of newTpl.config) {
-        this.$set(this.gridConfig, item.id, item.default);
-      }
-
-      this.drawDraft();
-    }
-  },
   computed: {
     paperSettings: function() {
       return this.$refs.paperSettings.$data;
@@ -152,9 +113,8 @@ module.exports = {
     outputSettings: function() {
       return this.$refs.outputSettings.$data;
     },
-    // 可用的網格名稱
-    gridTemplates() {
-      return gridTemplates;
+    gridSettings: function() {
+      return this.$refs.gridSettings.$data;
     }
   }
 };
@@ -181,5 +141,4 @@ module.exports = {
   #generate-image
     max-width: 100%
     max-height: 100%
-
 </style>
