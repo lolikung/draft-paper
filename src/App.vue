@@ -7,26 +7,12 @@
     //- 設定
     #config-aside
       ul
-        li
-          | 紙張大小
-          input(v-model.number="paper.width" type="number" min="1" max="999" step="1" value="210" @change="changeConfig")
-          | x
-          input(v-model.number="paper.height" type="number" min="1" max="999" step="1" value="297" @change="changeConfig")
-        li
-          | 邊距
-          | 上
-          input(v-model.number="paper.marginTop" type="number" min="0" max="999" step="1" value="10" @change="changeConfig")
-          br
-          | 左
-          input(v-model.number="paper.marginLeft" type="number" min="0" max="999" step="1" value="10" @change="changeConfig")
-          | 右
-          input(v-model.number="paper.marginRight" type="number" min="0" max="999" step="1" value="10" @change="changeConfig")
-          br
-          | 下
-          input(v-model.number="paper.marginBottom" type="number" min="0" max="999" step="1" value="10" @change="changeConfig")
-        li
-          | 列印解析度
-          input(v-model.number="paper.resoltion" type="number" min="72" max="9999" step="1" value="300" @change="changeConfig")
+        //- 紙張設定
+        paperSettings(ref="paperSettings" @change="changeConfig")
+        //- 佈局設定
+        layoutSettings(ref="layoutSettings" @change="changeConfig")
+        //- 輸出設定
+        outputSettings(ref="outputSettings" @change="changeConfig")
       hr
       | 網格類型
       select(v-model="gridTemplate")
@@ -47,6 +33,9 @@
 
 <script>
 let components = {
+  paperSettings: require('./settings/paper.vue'),
+  layoutSettings: require('./settings/layout.vue'),
+  outputSettings: require('./settings/output.vue'),
   extInput: require('./extInput.vue')
 };
 let gridTemplates = [
@@ -59,15 +48,6 @@ module.exports = {
   data() {
     return {
       gridTemplate: null,
-      paper: {
-        width: 210,
-        height: 297,
-        resoltion: 300,
-        marginTop: 10,
-        marginLeft: 10,
-        marginRight: 10,
-        marginBottom: 10
-      },
       gridConfig: {
       }
     };
@@ -77,6 +57,7 @@ module.exports = {
       this.drawDraft();
     },
     drawDraft( dpi = 72 ) {
+      console.log('draw');
       let MM_PER_INCH = 25.4;
       let scale = dpi/MM_PER_INCH;
       let gridTemplate = this.gridTemplate;
@@ -93,8 +74,8 @@ module.exports = {
        * 繪製稿紙
        */
       // 計算可用內容寬高
-      let contentWidth = Math.floor((this.paper.width - this.paper.marginLeft - this.paper.marginRight)*scale);
-      let contentHeight = Math.floor((this.paper.height - this.paper.marginTop - this.paper.marginBottom)*scale);
+      let contentWidth = Math.floor((this.paperSettings.width - this.layoutSettings.marginLeft - this.layoutSettings.marginRight)*scale);
+      let contentHeight = Math.floor((this.paperSettings.height - this.layoutSettings.marginTop - this.layoutSettings.marginBottom)*scale);
 
       // 計算可以畫幾格
       let gridCol = Math.floor(contentWidth/(gridCanvas.width-borderSize));
@@ -102,8 +83,8 @@ module.exports = {
 
       // 建立紙張
       let draftCanvas = document.createElement('canvas');
-      draftCanvas.width = Math.round(this.paper.width * scale);
-      draftCanvas.height = Math.round(this.paper.height * scale);
+      draftCanvas.width = Math.round(this.paperSettings.width * scale);
+      draftCanvas.height = Math.round(this.paperSettings.height * scale);
       let draftCtx = draftCanvas.getContext('2d');
 
       // 開始畫表格
@@ -136,7 +117,7 @@ module.exports = {
     },
     // 產生圖片
     generateImage() {
-      this.drawDraft(this.paper.resoltion);
+      this.drawDraft(this.outputSettings.resoltion);
       let base64 = this.$refs.draftPaper.toDataURL();
       this.$refs.genertateImage.setAttribute('src', base64);
     }
@@ -162,6 +143,15 @@ module.exports = {
     }
   },
   computed: {
+    paperSettings: function() {
+      return this.$refs.paperSettings.$data;
+    },
+    layoutSettings: function() {
+      return this.$refs.layoutSettings.$data;
+    },
+    outputSettings: function() {
+      return this.$refs.outputSettings.$data;
+    },
     // 可用的網格名稱
     gridTemplates() {
       return gridTemplates;
