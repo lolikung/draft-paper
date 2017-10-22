@@ -33,6 +33,17 @@ let components = {
 
 module.exports = {
   components,
+  computed: {
+    settings: function() {
+      let refs = this.$refs;
+      return {
+        paper: refs.paperSettings.$data,
+        layout: refs.layoutSettings.$data,
+        output: refs.outputSettings.$data,
+        grid: refs.gridSettings.$data
+      }
+    }
+  },
   methods: {
     changeConfig() {
       this.drawDraft();
@@ -41,12 +52,18 @@ module.exports = {
       console.log('draw');
       let MM_PER_INCH = 25.4;
       let scale = dpi/MM_PER_INCH;
-      let gridTemplate = this.gridSettings.template;
+      let {
+        paper: paperSettings,
+        layout: layoutSettings,
+        output: outputSettings,
+        grid: gridSettings
+      } = this.settings;
+      let gridTemplate = gridSettings.template;
 
       /**
        * 畫單一格子
        */
-      let gridDraw = gridTemplate.render(scale, this.gridSettings.config);
+      let gridDraw = gridTemplate.render(scale, gridSettings.config);
 
       let borderSize = gridDraw.layout.borderTop;
       let gridCanvas = gridDraw.canvas;
@@ -55,8 +72,8 @@ module.exports = {
        * 繪製稿紙
        */
       // 計算可用內容寬高
-      let contentWidth = Math.floor((this.paperSettings.width - this.layoutSettings.marginLeft - this.layoutSettings.marginRight)*scale);
-      let contentHeight = Math.floor((this.paperSettings.height - this.layoutSettings.marginTop - this.layoutSettings.marginBottom)*scale);
+      let contentWidth = Math.floor((paperSettings.width - layoutSettings.marginLeft - layoutSettings.marginRight)*scale);
+      let contentHeight = Math.floor((paperSettings.height - layoutSettings.marginTop - layoutSettings.marginBottom)*scale);
 
       // 計算可以畫幾格
       let gridCol = Math.floor(contentWidth/(gridCanvas.width-borderSize));
@@ -64,8 +81,8 @@ module.exports = {
 
       // 建立紙張
       let draftCanvas = document.createElement('canvas');
-      draftCanvas.width = Math.round(this.paperSettings.width * scale);
-      draftCanvas.height = Math.round(this.paperSettings.height * scale);
+      draftCanvas.width = Math.round(paperSettings.width * scale);
+      draftCanvas.height = Math.round(paperSettings.height * scale);
       let draftCtx = draftCanvas.getContext('2d');
 
       // 開始畫表格
@@ -98,23 +115,9 @@ module.exports = {
     },
     // 產生圖片
     generateImage() {
-      this.drawDraft(this.outputSettings.resoltion);
+      this.drawDraft(this.settings.output.resoltion);
       let base64 = this.$refs.draftPaper.toDataURL();
       this.$refs.genertateImage.setAttribute('src', base64);
-    }
-  },
-  computed: {
-    paperSettings: function() {
-      return this.$refs.paperSettings.$data;
-    },
-    layoutSettings: function() {
-      return this.$refs.layoutSettings.$data;
-    },
-    outputSettings: function() {
-      return this.$refs.outputSettings.$data;
-    },
-    gridSettings: function() {
-      return this.$refs.gridSettings.$data;
     }
   }
 };
@@ -130,10 +133,12 @@ module.exports = {
     flex: 5
     background: #CCC
     text-align: center
+    padding: 6px 16px
   #draft-paper
     max-width: 100%
     max-height: 100%
     background: white
+    box-shadow: 0px 1px 7px #656565
   #config-aside
     border-left: 1px solid #AAA
     flex: 3
