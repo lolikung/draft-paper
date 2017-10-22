@@ -39,10 +39,6 @@ module.exports = merge(common, {
             'vuex$': 'vuex/dist/vuex.min.js',
         }
     },
-    devServer: {
-        historyApiFallback: true,
-        noInfo: true
-    },
     performance: {
         hints: false
     },

@@ -27,5 +27,9 @@ module.exports = merge(common, {
     performance: {
         hints: false
     },
-    devtool: '#eval-source-map'
+    devtool: '#eval-source-map',
+    devServer: {
+        host: "0.0.0.0",
+        disableHostCheck: true
+    }
 });
